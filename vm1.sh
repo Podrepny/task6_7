@@ -1,5 +1,7 @@
 #!/bin/bash
+
 source vm1.config
+
 if [ "$EXT_IP" == "DHCP" ]; then
      dhclient $EXTERNAL_IF
 else
@@ -16,4 +18,3 @@ ifconfig $INTERNAL_IF.$VLAN $VLAN_IP up
 # step 3 setup routing for VM2
 sysctl net.ipv4.ip_forward=1
 iptables -t nat -A POSTROUTING -s `echo $APACHE_VLAN_IP | sed 's/\/.*$//g'` -o $EXTERNAL_IF -j MASQUERADE
-
