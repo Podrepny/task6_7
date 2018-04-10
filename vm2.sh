@@ -2,7 +2,8 @@
 
 source vm2.config
 HOST_NAME="vm2"
-HOSTS_STR="`echo "$APACHE_VLAN_IP" | sed 's/\/.*$//g'`       $HOST_NAME"
+HOST_IP=`echo "$APACHE_VLAN_IP" | sed 's/\/.*$//g'`
+HOSTS_STR="$HOST_IP $HOST_NAME"
 
 # setup internet routing
 ifconfig $INTERNAL_IF $INTERNAL_IP up
@@ -24,11 +25,11 @@ sudo hostname --file /etc/hostname
 sudo apt-get -y install apache2 curl
 
 # Set apache to listen only on APACHE_VLAN_IP
-sed -i 's/Listen\ \(.*\)$/Listen\ '$APACHE_VLAN_IP':\1/g' /etc/apache2/ports.conf
+sed -i 's/Listen\ \(.*\)$/Listen\ '$HOST_IP':\1/g' /etc/apache2/ports.conf
 
 # Generate apache conf
 sudo cat <<EOF > /etc/apache2/sites-available/$HOST_NAME.conf
-<VirtualHost $APACHE_VLAN_IP:80>
+<VirtualHost $HOST_IP:80>
         ServerAdmin webmaster@localhost
         DocumentRoot /var/www/html
 #        ErrorLog ${APACHE_LOG_DIR}/error.log
