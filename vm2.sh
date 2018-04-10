@@ -20,4 +20,26 @@ sudo sed -i -e "1 s/^/$HOSTS_STR\n/" /etc/hosts
 echo "$HOST_NAME" > /etc/hostname
 sudo hostname --file /etc/hostname
 
+# Install Apache and Curl
+sudo apt-get -y install apache2 curl
+
+# Set apache to listen only on APACHE_VLAN_IP
+sed -i 's/Listen\ \(.*\)$/Listen\ '$APACHE_VLAN_IP':\1/g' /etc/apache2/ports.conf
+
+# Generate apache conf
+sudo cat <<EOF > /etc/apache2/sites-available/$HOST_NAME.conf
+<VirtualHost $APACHE_VLAN_IP:80>
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/html
+#        ErrorLog ${APACHE_LOG_DIR}/error.log
+#        CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+EOF
+
+# Disable apache default conf
+a2dissite 000-default
+# Enable new apache conf
+a2ensite $HOST_NAME
+
+service apache2 restart
 
