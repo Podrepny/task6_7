@@ -31,4 +31,9 @@ sudo sed -i -e "1 s/^/$HOSTS_STR\n/" /etc/hosts
 echo "$HOST_NAME" > /etc/hostname
 sudo hostname --file /etc/hostname
 
+# Install "nginx" and "curl"
+apt-get -y install nginx curl
 
+cat <<EOF > /etc/nginx/sites-available/vm1
+
+EOF
