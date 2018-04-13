@@ -17,7 +17,8 @@ fi
 ifconfig $INTERNAL_IF $INT_IP up
 
 # Install packages
-apt-get -y install vlan ssh openssh-server openssl
+#apt-get -y install vlan ssh openssh-server openssl
+apt-get -y install vlan openssl
 
 # Setup VLAN on INTERNAL_IF
 vconfig add $INTERNAL_IF $VLAN
@@ -28,6 +29,7 @@ sysctl net.ipv4.ip_forward=1
 iptables -t nat -A POSTROUTING -s `grep ^INT_IP= vm2.config | sed 's/^INT_IP=\(.*\)\/.*$/\1/g'` -o $EXTERNAL_IF -j MASQUERADE
 
 # Edit host name and nameservers
+# ? check later
 sudo sed -i -e "1 s/^/$HOSTS_STR\n/" /etc/hosts
 echo "$HOST_NAME" > /etc/hostname
 sudo hostname --file /etc/hostname
