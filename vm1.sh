@@ -25,7 +25,7 @@ ifconfig $INTERNAL_IF.$VLAN $VLAN_IP up
 
 # step 3 setup routing for VM2
 sysctl net.ipv4.ip_forward=1
-iptables -t nat -A POSTROUTING -s `grep ^INTERNAL_IP= vm2.config | sed 's/^INT_IP=\(.*\)\/.*$/\1/g'` -o $EXTERNAL_IF -j MASQUERADE
+iptables -t nat -A POSTROUTING -s `grep ^INT_IP= vm2.config | sed 's/^INT_IP=\(.*\)\/.*$/\1/g'` -o $EXTERNAL_IF -j MASQUERADE
 
 # Edit host name and nameservers
 sudo sed -i -e "1 s/^/$HOSTS_STR\n/" /etc/hosts
@@ -54,10 +54,10 @@ server {
 
     location / {
 
-      proxy_set_header        Host $host;
-      proxy_set_header        X-Real-IP $remote_addr;
-      proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header        X-Forwarded-Proto $scheme;
+      proxy_set_header        Host \$host;
+      proxy_set_header        X-Real-IP \$remote_addr;
+      proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header        X-Forwarded-Proto \$scheme;
 
       # Fix the "It appears that your reverse proxy set up is broken" error.
       proxy_pass          http://$APACHE_VLAN_IP:80;
@@ -66,3 +66,7 @@ server {
     }
 }
 EOF
+rm -f /etc/nginx/sites-enabled/default
+ln -s /etc/nginx/sites-available/vm1 /etc/nginx/sites-enabled/vm1
+service nginx restart
+
