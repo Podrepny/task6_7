@@ -2,7 +2,7 @@
 
 source vm1.config
 HOST_NAME="vm1"
-HOSTS_STR="`echo "$VLAN_IP" | sed 's/\/.*$//g'`       $HOST_NAME"
+#HOSTS_STR="`echo "$VLAN_IP" | sed 's/\/.*$//g'`       $HOST_NAME"
 APACHE_VLAN_IP="`echo "$APACHE_VLAN_IP" | sed 's/\/.*$//g'`"
 SSL_PATH="/etc/ssl/certs"
 if [ "$EXT_IP" == "DHCP" ]; then
@@ -89,15 +89,6 @@ rm -f /etc/nginx/sites-enabled/default
 ln -s /etc/nginx/sites-available/$HOST_NAME /etc/nginx/sites-enabled/$HOST_NAME
 #service nginx restart
 
-
-#openssl req -x509 -newkey rsa:2048 -keyout CA_private_key_file.pem -out CA_public_key_file.pem -days 365 -config openssl.cnf -subj "/C=US/ST=private/L=province/O=city/CN=hostname.example.com"
-
-#openssl genrsa -out key_file.key 2048
-
-#openssl req -new -sha256 -key key_file.key -out csr_file.csr -subj "/C=US/ST=private/L=province/O=city/CN=hostname.example.com"
-
-#openssl x509 -req -in csr_file.csr -CA CA_public_key_file.pem -CAkey CA_private_key_file.pem -CAcreateserial -out signed_cert_file.csr
-
 mkdir -p /etc/ssl/certs
 
 # Gen root CA key
@@ -108,10 +99,10 @@ openssl req -x509 -new -nodes -key $SSL_PATH/root-ca.key -sha256 -days 365 -out 
 openssl genrsa -out $SSL_PATH/web.key 2048
 # Gen nginx certificate signing request
 #openssl req -new -out $SSL_PATH/web.csr -key $SSL_PATH/web.key -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Podrepny/OU=web/CN=vm1/"
-openssl req -new -out $SSL_PATH/web.csr -key $SSL_PATH/web.key -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Podrepny/OU=web/CN=$HOST_NAME/" -config openssl.cnf
-
+openssl req -new -out $SSL_PATH/web.csr -key $SSL_PATH/web.key -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Podrepny/OU=web/CN=$HOST_NAME/"
 # Signing a nginx CSR with a root certificate
-openssl x509 -req -in $SSL_PATH/web.csr -CA $SSL_PATH/root-ca.crt -CAkey $SSL_PATH/root-ca.key -CAcreateserial -out $SSL_PATH/web.crt
+#openssl x509 -req -in $SSL_PATH/web.csr -CA $SSL_PATH/root-ca.crt -CAkey $SSL_PATH/root-ca.key -CAcreateserial -out $SSL_PATH/web.crt -days 365 -sha256 -extfile /tmp/$HOST_NAME.cnf
+openssl x509 -req -in $SSL_PATH/web.csr -CA $SSL_PATH/root-ca.crt -CAkey $SSL_PATH/root-ca.key -CAcreateserial -out $SSL_PATH/web.crt -days 365 -sha256 -extfile <(echo -e "authorityKeyIdentifier=keyid,issuer\nbasicConstraints=CA:FALSE\nkeyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment\nsubjectAltName = @alt_names\n[ alt_names ]\nDNS.1 = $HOST_NAME\nDNS.2 = $EXT_IP_ADDR\nIP.1 = $EXT_IP_ADDR")
 # Combining two certificates (nginx and root CA) to web.pem
 cat $SSL_PATH/web.crt $SSL_PATH/root-ca.crt > $SSL_PATH/web.pem
 
