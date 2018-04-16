@@ -108,3 +108,4 @@ cat $SSL_PATH/web.crt $SSL_PATH/root-ca.crt > $SSL_PATH/web.pem
 
 service nginx restart
 
+exit 0
