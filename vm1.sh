@@ -10,9 +10,10 @@ if [ "$EXT_IP" == "DHCP" ]; then
 else
      ifconfig $EXTERNAL_IF $EXT_IP
      route add default gw `echo $EXT_GW | sed 's/\/.*$//g'`
-     echo "nameserver 8.8.4.4" >> /etc/resolv.conf
-     echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 fi
+
+echo "nameserver 8.8.4.4" >> /etc/resolv.conf
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
 EXT_IP_ADDR=`ip address show ens32 | grep "inet " | awk '{print $2}' | tr '\n' ' ' | sed 's/\/.*$//g'`
 
