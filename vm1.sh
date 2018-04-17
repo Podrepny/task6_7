@@ -15,7 +15,7 @@ fi
 echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
-EXT_IP_ADDR=`ip address show ens32 | grep "inet " | awk '{print $2}' | tr '\n' ' ' | sed 's/\/.*$//g'`
+EXT_IP_ADDR=`ip address show $EXTERNAL_IF | grep "inet " | awk '{print $2}' | tr '\n' ' ' | sed 's/\/.*$//g'`
 
 # setup internet for VM2
 ifconfig $INTERNAL_IF $INT_IP up
