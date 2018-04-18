@@ -33,7 +33,6 @@ cat <<EOF > /etc/apache2/ports.conf
 Listen $HOST_IP:80
 EOF
 
-
 # Hardcode. Generate apache conf for vm2
 cat <<EOF > /etc/apache2/sites-available/$HOST_NAME.conf
 <VirtualHost $HOST_IP:80>
