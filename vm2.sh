@@ -7,13 +7,11 @@ HOSTS_STR="$HOST_IP $HOST_NAME"
 
 # setup internet routing
 ifconfig $INTERNAL_IF $INT_IP up
-#route add default gw `grep ^INT_IP= vm1.config | sed 's/^INT_IP=\(.*\)\/.*$/\1/g'`
 route add default gw `echo $GW_IP | sed 's/\/.*$//g'`
 echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
 # Setup VLAN on INTERNAL_IF
-apt-get -y install vlan
 vconfig add $INTERNAL_IF $VLAN
 ifconfig $INTERNAL_IF.$VLAN $APACHE_VLAN_IP up
 
@@ -25,10 +23,10 @@ echo "$HOST_NAME" > /etc/hostname
 hostname --file /etc/hostname
 
 # Install Apache and Curl
-apt-get -y install apache2 curl
+apt-get -y install apache2
 
 # Set apache to listen only on APACHE_VLAN_IP
-#sed -i 's/Listen\ \(.*\)$/Listen\ '$HOST_IP':\1/g' /etc/apache2/ports.conf
+cp -p /etc/apache2/ports.conf /etc/apache2/ports.conf.bak
 cat <<EOF > /etc/apache2/ports.conf
 Listen $HOST_IP:80
 EOF
