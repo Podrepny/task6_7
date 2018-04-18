@@ -2,13 +2,14 @@
 
 source vm1.config
 HOST_NAME="vm1"
-APACHE_VLAN_IP="`echo "$APACHE_VLAN_IP" | sed 's/\/.*$//g'`"
+APACHE_VLAN_IP="${APACHE_VLAN_IP//\/*/}"
 SSL_PATH="/etc/ssl/certs"
+VM2_INT_IP="`grep ^INT_IP= vm2.config | sed 's/^INT_IP=\(.*\)\/.*$/\1/g'`"
 if [ "$EXT_IP" == "DHCP" ]; then
      dhclient $EXTERNAL_IF
 else
-     ifconfig $EXTERNAL_IF $EXT_IP
-     route add default gw `echo $EXT_GW | sed 's/\/.*$//g'`
+     ifconfig $EXTERNAL_IF $EXT_IP up
+     route add default gw `echo $EXT_GW//\/*/`
 fi
 
 echo "nameserver 8.8.4.4" >> /etc/resolv.conf
@@ -28,36 +29,30 @@ ifconfig $INTERNAL_IF.$VLAN $VLAN_IP up
 
 # step 3 setup routing for VM2
 sysctl net.ipv4.ip_forward=1
-iptables -t nat -A POSTROUTING -s `grep ^INT_IP= vm2.config | sed 's/^INT_IP=\(.*\)\/.*$/\1/g'` -o $EXTERNAL_IF -j MASQUERADE
+iptables -t nat -A POSTROUTING -s $VM2_INT_IP -o $EXTERNAL_IF -j MASQUERADE
 
-# Edit host name and nameservers
-#sed -i -e "1 s/^/$HOSTS_STR\n/" /etc/hosts
+# Edit hosts
 cat <<EOF > /etc/hosts
 $EXT_IP_ADDR       $HOST_NAME
 127.0.0.1       localhost
 127.0.1.1       $HOST_NAME
-
-# The following lines are desirable for IPv6 capable hosts
-::1     localhost ip6-localhost ip6-loopback
-ff02::1 ip6-allnodes
-ff02::2 ip6-allrouters
 EOF
 
+# Edit hostname, change current hostname. Because we can )
 echo "$HOST_NAME" > /etc/hostname
 hostname --file /etc/hostname
 
 # Install "nginx" and "curl"
 apt-get -y install nginx curl
 
+# Hardcode. Edit nginx config for vm1
 cat <<EOF > /etc/nginx/sites-available/$HOST_NAME
 server {
 
     listen $NGINX_PORT;
     server_name vm1;
 
-#    ssl_certificate           /etc/nginx/cert.crt;
     ssl_certificate           $SSL_PATH/web.pem;
-#    ssl_certificate_key       /etc/nginx/cert.key;
     ssl_certificate_key       $SSL_PATH/web.key;
 
     ssl on;
@@ -77,16 +72,14 @@ server {
 
       # Fix the "It appears that your reverse proxy set up is broken" error.
       proxy_pass          http://$APACHE_VLAN_IP:80;
-#      proxy_read_timeout  90;
 
     }
 }
 EOF
 rm -f /etc/nginx/sites-enabled/default
 ln -s /etc/nginx/sites-available/$HOST_NAME /etc/nginx/sites-enabled/$HOST_NAME
-#service nginx restart
 
-mkdir -p /etc/ssl/certs
+mkdir -p $SSL_PATH
 
 # Gen root CA key
 openssl genrsa -out $SSL_PATH/root-ca.key 4096

@@ -16,8 +16,10 @@ apt-get -y install vlan
 vconfig add $INTERNAL_IF $VLAN
 ifconfig $INTERNAL_IF.$VLAN $APACHE_VLAN_IP up
 
-# Edit host name and nameservers
+# Edit hosts
 sed -i -e "1 s/^/$HOSTS_STR\n/" /etc/hosts
+
+# Edit hostname, change current hostname. Because we can )
 echo "$HOST_NAME" > /etc/hostname
 hostname --file /etc/hostname
 
@@ -27,13 +29,13 @@ apt-get -y install apache2 curl
 # Set apache to listen only on APACHE_VLAN_IP
 sed -i 's/Listen\ \(.*\)$/Listen\ '$HOST_IP':\1/g' /etc/apache2/ports.conf
 
-# Generate apache conf
+# Hardcode. Generate apache conf for vm2
 cat <<EOF > /etc/apache2/sites-available/$HOST_NAME.conf
 <VirtualHost $HOST_IP:80>
         ServerAdmin webmaster@localhost
         DocumentRoot /var/www/html
-#        ErrorLog ${APACHE_LOG_DIR}/error.log
-#        CustomLog ${APACHE_LOG_DIR}/access.log combined
+#        ErrorLog \${APACHE_LOG_DIR}/error.log
+#        CustomLog \${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 EOF
 
