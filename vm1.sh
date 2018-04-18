@@ -2,7 +2,6 @@
 
 source vm1.config
 HOST_NAME="vm1"
-#HOSTS_STR="`echo "$VLAN_IP" | sed 's/\/.*$//g'`       $HOST_NAME"
 APACHE_VLAN_IP="`echo "$APACHE_VLAN_IP" | sed 's/\/.*$//g'`"
 SSL_PATH="/etc/ssl/certs"
 if [ "$EXT_IP" == "DHCP" ]; then
@@ -21,8 +20,7 @@ EXT_IP_ADDR=`ip address show $EXTERNAL_IF | grep "inet " | awk '{print $2}' | tr
 ifconfig $INTERNAL_IF $INT_IP up
 
 # Install packages
-#apt-get -y install vlan ssh openssh-server openssl
-apt-get -y install vlan openssl
+apt-get -y install vlan ssh openssh-server openssl
 
 # Setup VLAN on INTERNAL_IF
 vconfig add $INTERNAL_IF $VLAN
@@ -33,9 +31,7 @@ sysctl net.ipv4.ip_forward=1
 iptables -t nat -A POSTROUTING -s `grep ^INT_IP= vm2.config | sed 's/^INT_IP=\(.*\)\/.*$/\1/g'` -o $EXTERNAL_IF -j MASQUERADE
 
 # Edit host name and nameservers
-# ? check later
 #sed -i -e "1 s/^/$HOSTS_STR\n/" /etc/hosts
-
 cat <<EOF > /etc/hosts
 $EXT_IP_ADDR       $HOST_NAME
 127.0.0.1       localhost
@@ -99,10 +95,8 @@ openssl req -x509 -new -nodes -key $SSL_PATH/root-ca.key -sha256 -days 365 -out 
 # Gen nginx key
 openssl genrsa -out $SSL_PATH/web.key 2048
 # Gen nginx certificate signing request
-#openssl req -new -out $SSL_PATH/web.csr -key $SSL_PATH/web.key -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Podrepny/OU=web/CN=vm1/"
 openssl req -new -out $SSL_PATH/web.csr -key $SSL_PATH/web.key -subj "/C=UA/ST=Kharkov/L=Kharkov/O=Podrepny/OU=web/CN=$HOST_NAME/"
 # Signing a nginx CSR with a root certificate
-#openssl x509 -req -in $SSL_PATH/web.csr -CA $SSL_PATH/root-ca.crt -CAkey $SSL_PATH/root-ca.key -CAcreateserial -out $SSL_PATH/web.crt -days 365 -sha256 -extfile /tmp/$HOST_NAME.cnf
 openssl x509 -req -in $SSL_PATH/web.csr -CA $SSL_PATH/root-ca.crt -CAkey $SSL_PATH/root-ca.key -CAcreateserial -out $SSL_PATH/web.crt -days 365 -sha256 -extfile <(echo -e "authorityKeyIdentifier=keyid,issuer\nbasicConstraints=CA:FALSE\nkeyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment\nsubjectAltName = @alt_names\n[ alt_names ]\nDNS.1 = $HOST_NAME\nDNS.2 = $EXT_IP_ADDR\nIP.1 = $EXT_IP_ADDR")
 # Combining two certificates (nginx and root CA) to web.pem
 cat $SSL_PATH/web.crt $SSL_PATH/root-ca.crt > $SSL_PATH/web.pem
