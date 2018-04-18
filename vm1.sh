@@ -35,7 +35,6 @@ iptables -t nat -A POSTROUTING -s $VM2_INT_IP -o $EXTERNAL_IF -j MASQUERADE
 cat <<EOF > /etc/hosts
 $EXT_IP_ADDR       $HOST_NAME
 127.0.0.1       localhost
-127.0.1.1       $HOST_NAME
 EOF
 
 # Edit hostname, change current hostname. Because we can )
@@ -43,7 +42,7 @@ echo "$HOST_NAME" > /etc/hostname
 hostname --file /etc/hostname
 
 # Install "nginx" and "curl"
-apt-get -y install nginx curl
+apt-get -y install nginx
 
 # Hardcode. Edit nginx config for vm1
 cat <<EOF > /etc/nginx/sites-available/$HOST_NAME
