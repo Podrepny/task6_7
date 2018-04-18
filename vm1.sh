@@ -9,7 +9,7 @@ if [ "$EXT_IP" == "DHCP" ]; then
      dhclient $EXTERNAL_IF
 else
      ifconfig $EXTERNAL_IF $EXT_IP up
-     route add default gw `echo $EXT_GW//\/*/`
+     route add default gw `echo ${EXT_GW//\/*/}`
 fi
 
 echo "nameserver 8.8.4.4" >> /etc/resolv.conf
