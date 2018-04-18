@@ -5,6 +5,7 @@ HOST_NAME="vm1"
 APACHE_VLAN_IP="${APACHE_VLAN_IP//\/*/}"
 SSL_PATH="/etc/ssl/certs"
 VM2_INT_IP="`grep ^INT_IP= vm2.config | sed 's/^INT_IP=\(.*\)\/.*$/\1/g'`"
+route del default
 if [ "$EXT_IP" == "DHCP" ]; then
      dhclient $EXTERNAL_IF
 else
@@ -12,6 +13,7 @@ else
      route add default gw `echo ${EXT_GW//\/*/}`
 fi
 
+sed -i 's/^[[:space:]]*nameserver.*$//g' /etc/resolv.conf
 echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 

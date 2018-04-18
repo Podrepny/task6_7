@@ -6,8 +6,10 @@ HOST_IP=`echo "$APACHE_VLAN_IP" | sed 's/\/.*$//g'`
 HOSTS_STR="$HOST_IP $HOST_NAME"
 
 # setup internet routing
+route del default
 ifconfig $INTERNAL_IF $INT_IP up
 route add default gw `echo $GW_IP | sed 's/\/.*$//g'`
+sed -i 's/^[[:space:]]*nameserver.*$//g' /etc/resolv.conf
 echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
