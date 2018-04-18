@@ -19,7 +19,7 @@ echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
 EXT_IP_ADDR=`ip address show $EXTERNAL_IF | grep "inet " | awk '{print $2}' | tr '\n' ' ' | sed 's/\/.*$//g'`
 
-# setup internet for VM2
+# setup internet for VM2 pc
 ifconfig $INTERNAL_IF $INT_IP up
 
 # Install packages
@@ -50,7 +50,7 @@ apt-get -y install nginx
 cat <<EOF > /etc/nginx/sites-available/$HOST_NAME
 server {
 
-    listen $NGINX_PORT;
+    listen $EXT_IP_ADDR:$NGINX_PORT;
     server_name vm1;
 
     ssl_certificate           $SSL_PATH/web.pem;
