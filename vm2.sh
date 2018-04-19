@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DIR=`dirname $0`
+cd $SCRIPT_DIR
 source vm2.config
 HOST_NAME="vm2"
 HOST_IP=`echo "$APACHE_VLAN_IP" | sed 's/\/.*$//g'`
