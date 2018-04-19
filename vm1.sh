@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SCRIPT_DIR=`dirname $0`
+cd $SCRIPT_DIR
+
 source vm1.config
 HOST_NAME="vm1"
 APACHE_VLAN_IP="${APACHE_VLAN_IP//\/*/}"
