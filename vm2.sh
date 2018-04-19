@@ -16,6 +16,7 @@ echo "nameserver 8.8.4.4" >> /etc/resolv.conf
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
 # Setup VLAN on INTERNAL_IF
+modprobe 8021q
 vconfig add $INTERNAL_IF $VLAN
 ifconfig $INTERNAL_IF.$VLAN $APACHE_VLAN_IP up
 
