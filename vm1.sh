@@ -12,7 +12,7 @@ route del default
 if [ "$EXT_IP" == "DHCP" ]; then
      dhclient $EXTERNAL_IF
 else
-     ifconfig $EXTERNAL_IF $EXT_IP up
+     ifconfig $EXTERNAL_IF `echo ${EXT_IP//\/*/}` up
      route add default gw `echo ${EXT_GW//\/*/}`
 fi
 
