@@ -29,6 +29,7 @@ ifconfig $INTERNAL_IF $INT_IP up
 apt-get -y install vlan ssh openssh-server openssl
 
 # Setup VLAN on INTERNAL_IF
+modprobe 8021q
 vconfig add $INTERNAL_IF $VLAN
 ifconfig $INTERNAL_IF.$VLAN $VLAN_IP up
 
